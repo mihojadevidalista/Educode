@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entorno Interactivo: Portafolio Web & Micro-Retos HTML/CSS</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter & Fira Code -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#0f172a',
+                        editorbg: '#1e293b',
+                        sidebarbg: '#0f172a',
+                        panelbg: '#1e293b',
+                        accent: '#6366f1',
+                        accentHover: '#4f46e5',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        codeText: '#f8fafc'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+        
+        .code-editor {
+            font-family: 'Fira Code', monospace;
+            tab-size: 2;
+        }
+
+        .line-numbers {
+            font-family: 'Fira Code', monospace;
+            user-select: none;
+        }
+
+        /* Pulse and glow animations for gamification */
+        .glow-success {
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        }
+        .glow-accent {
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+        }
+        .glow-warning {
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #printable-modal, #printable-modal * {
+                visibility: visible;
+            }
+            #printable-modal {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: white !important;
+                color: black !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-darkbg text-slate-100 font-sans h-screen flex flex-col overflow-hidden selection:bg-indigo-500 selection:text-white">
+
+    <!-- HEADER Y BARRA DE ESTADO GAMIFICADA -->
+    <header class="bg-slate-900 border-b border-slate-800 px-4 py-2.5 flex flex-wrap justify-between items-center z-20 shrink-0 gap-3">
+        <!-- Brand / Title -->
+        <div class="flex items-center space-x-3">
+            <div class="bg-indigo-600 p-2 rounded-lg text-white shadow-lg shadow-indigo-500/30">
+                <i class="fa-solid fa-code text-xl"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-base md:text-lg text-white leading-tight flex items-center gap-2">
+                    EduCode <span class="text-xs bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded border border-indigo-500/30 font-mono">Diseño Web</span>
+                </h1>
+                <p class="text-xs text-slate-400 hidden sm:block">Portafolio Web Profesional & Micro-Retos en Dupla</p>
+            </div>
+        </div>
+
+        <!-- Gamification Stats Dashboard -->
+        <div class="flex items-center flex-wrap gap-4 md:gap-6 bg-slate-800/80 px-4 py-1.5 rounded-xl border border-slate-700/60">
+            <!-- Selector de Rol Activo -->
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider hidden lg:inline">Rol:</span>
+                <button id="role-toggle-btn" onclick="toggleRole()" class="flex items-center gap-2 bg-indigo-950 hover:bg-indigo-900 text-indigo-300 border border-indigo-700/50 px-3 py-1 rounded-lg text-xs font-medium transition-all">
+                    <i id="role-icon" class="fa-solid fa-laptop-code text-indigo-400"></i>
+                    <span id="role-label">Rol 1: Maquetador</span>
+                    <i class="fa-solid fa-arrows-rotate text-[10px] opacity-60 ml-1"></i>
+                </button>
+            </div>
+
+            <div class="h-6 w-px bg-slate-700 hidden sm:block"></div>
+
+            <!-- XP Points & Level -->
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-1.5">
+                    <i class="fa-solid fa-bolt text-amber-400 text-sm animate-pulse"></i>
+                    <span id="xp-display" class="font-bold text-amber-400 text-sm font-mono">0</span>
+                    <span class="text-xs text-slate-400 font-mono">/ 300 XP</span>
+                </div>
+                <!-- XP Progress Bar -->
+                <div class="w-20 md:w-28 bg-slate-700 rounded-full h-2.5 overflow-hidden">
+                    <div id="xp-progress-bar" class="bg-gradient-to-r from-amber-500 to-emerald-400 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="h-6 w-px bg-slate-700 hidden sm:block"></div>
+
+            <!-- Level Badge -->
+            <div class="flex items-center gap-1.5 bg-slate-900/60 px-2.5 py-1 rounded-lg border border-slate-700">
+                <i class="fa-solid fa-trophy text-amber-500 text-xs"></i>
+                <span id="level-label" class="text-xs font-bold text-slate-200">Nivel 1</span>
+            </div>
+
+            <!-- Badges Counter / Tooltip Trigger -->
+            <div class="flex items-center gap-1.5 cursor-pointer relative group" onclick="toggleBadgesModal()">
+                <div class="flex -space-x-1">
+                    <span id="badge-icon-1" class="w-6 h-6 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center text-[10px] text-slate-500 transition-all"><i class="fa-solid fa-cubes"></i></span>
+                    <span id="badge-icon-2" class="w-6 h-6 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center text-[10px] text-slate-500 transition-all"><i class="fa-solid fa-palette"></i></span>
+                    <span id="badge-icon-3" class="w-6 h-6 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center text-[10px] text-slate-500 transition-all"><i class="fa-solid fa-bug"></i></span>
+                </div>
+                <span class="text-xs font-semibold text-slate-300 ml-1 hidden md:inline">Insignias</span>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-2">
+            <button onclick="openEvidenceModal()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all">
+                <i class="fa-solid fa-file-contract text-indigo-400"></i>
+                <span class="hidden md:inline">Evidencia</span>
+            </button>
+            <button onclick="downloadCode()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-medium transition-all shadow-md shadow-emerald-900/20">
+                <i class="fa-solid fa-download"></i>
+                <span class="hidden md:inline">Descargar HTML</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT - SPLIT SCREEN LAYOUT -->
+    <main class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
+        
+        <!-- PANEL IZQUIERDO: CONTROLES, NIVELES Y EDITOR DE CÓDIGO -->
+        <section class="w-full md:w-1/2 flex flex-col border-r border-slate-800 bg-slate-900 overflow-hidden">
+            
+            <!-- Navigation Tabs for Micro-Retos -->
+            <div class="bg-slate-950 border-b border-slate-800 flex items-center justify-between px-2 pt-2">
+                <div class="flex items-center space-x-1 overflow-x-auto no-scrollbar">
+                    <button id="tab-lvl-1" onclick="switchLevel(1)" class="level-tab active bg-slate-900 text-indigo-400 border-t-2 border-indigo-500 px-4 py-2 text-xs font-semibold rounded-t-lg flex items-center gap-2 whitespace-nowrap transition-all">
+                        <i class="fa-solid fa-code text-xs"></i> Reto 1: HTML Básico
+                    </button>
+                    <button id="tab-lvl-2" onclick="switchLevel(2)" class="level-tab bg-slate-950 text-slate-400 hover:text-slate-200 px-4 py-2 text-xs font-semibold rounded-t-lg flex items-center gap-2 whitespace-nowrap transition-all">
+                        <i class="fa-solid fa-layer-group text-xs"></i> Reto 2: Estructura
+                    </button>
+                    <button id="tab-lvl-3" onclick="switchLevel(3)" class="level-tab bg-slate-950 text-slate-400 hover:text-slate-200 px-4 py-2 text-xs font-semibold rounded-t-lg flex items-center gap-2 whitespace-nowrap transition-all">
+                        <i class="fa-solid fa-paintbrush text-xs"></i> Reto 3: Estilos CSS
+                    </button>
+                </div>
+
+                <!-- Cazador de Errores Button -->
+                <button onclick="startDebuggerChallenge()" class="mb-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all animate-pulse">
+                    <i class="fa-solid fa-bug"></i>
+                    <span class="hidden sm:inline">Cazador Errores</span>
+                </button>
+            </div>
+
+            <!-- Panel de Objetivos y Comodín por Nivel -->
+            <div class="bg-slate-900/90 border-b border-slate-800 p-3.5 text-xs">
+                <div class="flex justify-between items-start mb-2">
+                    <div>
+                        <h2 id="level-title" class="font-bold text-slate-200 text-sm flex items-center gap-2">
+                            <!-- Injected by JS -->
+                        </h2>
+                        <p id="level-desc" class="text-slate-400 text-xs mt-0.5">
+                            <!-- Injected by JS -->
+                        </p>
+                    </div>
+                    <button onclick="toggleHintModal()" class="shrink-0 bg-indigo-900/40 hover:bg-indigo-800/60 text-indigo-300 border border-indigo-700/50 px-2.5 py-1 rounded-md text-xs flex items-center gap-1 transition-all">
+                        <i class="fa-solid fa-lightbulb text-amber-400"></i> Comodín Ayuda
+                    </button>
+                </div>
+
+                <!-- Checklist de Objetivos Técnicos -->
+                <div class="mt-3 bg-slate-950/60 p-2.5 rounded-lg border border-slate-800/80">
+                    <div class="flex justify-between items-center mb-1.5">
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Lista de Chequeo Técnica</span>
+                        <span id="checklist-counter" class="text-[11px] font-mono text-indigo-400 font-bold">0/3 Completados</span>
+                    </div>
+                    <ul id="checklist-items" class="space-y-1.5">
+                        <!-- Injected by JS -->
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Tabs de Editor de Código (HTML / CSS) -->
+            <div class="bg-slate-950 px-3 py-1.5 border-b border-slate-800 flex justify-between items-center">
+                <div class="flex space-x-2">
+                    <button id="editor-tab-html" onclick="switchEditorTab('html')" class="px-3 py-1 rounded-md text-xs font-mono font-bold bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 flex items-center gap-1.5">
+                        <i class="fa-brands fa-html5 text-orange-500"></i> index.html
+                    </button>
+                    <button id="editor-tab-css" onclick="switchEditorTab('css')" class="px-3 py-1 rounded-md text-xs font-mono font-medium text-slate-400 hover:text-slate-200 flex items-center gap-1.5">
+                        <i class="fa-brands fa-css3-alt text-blue-500"></i> styles.css
+                    </button>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span id="auto-save-indicator" class="text-[10px] text-slate-500 flex items-center gap-1 font-mono">
+                        <i class="fa-solid fa-circle text-[6px] text-emerald-500"></i> Sincronizado
+                    </span>
+                    <button onclick="updatePreview()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs px-2.5 py-1 rounded flex items-center gap-1 transition-all">
+                        <i class="fa-solid fa-play text-emerald-400 text-[10px]"></i> Ejecutar
+                    </button>
+                </div>
+            </div>
+
+            <!-- CODE EDITOR AREA WITH LINE NUMBERS -->
+            <div class="flex-1 relative flex overflow-hidden bg-[#0d1117]">
+                <!-- Line Numbers Container -->
+                <div id="line-numbers" class="line-numbers py-3 px-2 bg-slate-950 text-slate-600 text-xs font-mono select-none text-right border-r border-slate-800/60 w-10 shrink-0">
+                    1
+                </div>
+
+                <!-- Textarea Editor for HTML -->
+                <textarea id="code-editor-html" 
+                    spellcheck="false" 
+                    oninput="handleCodeChange()"
+                    onscroll="syncScroll()"
+                    onkeydown="handleKeyDown(event)"
+                    class="code-editor w-full h-full py-3 px-3 bg-transparent text-slate-200 font-mono text-xs leading-relaxed focus:outline-none resize-none selection:bg-indigo-900/60"
+                    placeholder="Escribe tu código HTML aquí..."></textarea>
+
+                <!-- Textarea Editor for CSS (Hidden by default) -->
+                <textarea id="code-editor-css" 
+                    spellcheck="false" 
+                    oninput="handleCodeChange()"
+                    onscroll="syncScroll()"
+                    onkeydown="handleKeyDown(event)"
+                    class="code-editor hidden w-full h-full py-3 px-3 bg-transparent text-slate-200 font-mono text-xs leading-relaxed focus:outline-none resize-none selection:bg-indigo-900/60"
+                    placeholder="Escribe tu código CSS aquí..."></textarea>
+            </div>
+
+            <!-- Editor Footer Toolbar -->
+            <div class="bg-slate-950 border-t border-slate-800/80 px-3 py-1 flex justify-between items-center text-[11px] text-slate-500 font-mono">
+                <div class="flex items-center gap-3">
+                    <span id="cursor-pos">Líneas: 1</span>
+                    <span>UTF-8</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="resetCurrentCode()" class="hover:text-slate-300 transition-colors" title="Restablecer plantilla inicial">
+                        <i class="fa-solid fa-rotate-left"></i> Restablecer
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PANEL DERECHO: LIVE PREVIEW & RESPONSIVE SIMULATOR -->
+        <section class="w-full md:w-1/2 flex flex-col bg-slate-950 overflow-hidden border-t md:border-t-0 border-slate-800">
+            
+            <!-- Live Preview Top Toolbar -->
+            <div class="bg-slate-900 border-b border-slate-800 px-3 py-2 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <div class="flex space-x-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-500/80 inline-block"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-yellow-500/80 inline-block"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-green-500/80 inline-block"></span>
+                    </div>
+                    <span class="text-xs font-medium text-slate-400 ml-2 flex items-center gap-1.5">
+                        <i class="fa-solid fa-eye text-indigo-400"></i> Vista Previa en Vivo
+                    </span>
+                </div>
+
+                <!-- Device Viewport Switcher -->
+                <div class="flex items-center bg-slate-950 p-1 rounded-lg border border-slate-800 space-x-1">
+                    <button onclick="setViewport('desktop')" id="view-desktop" class="viewport-btn active p-1 px-2 rounded text-xs text-indigo-400 bg-slate-800 transition-all" title="Vista Escritorio">
+                        <i class="fa-solid fa-desktop"></i>
+                    </button>
+                    <button onclick="setViewport('tablet')" id="view-tablet" class="viewport-btn p-1 px-2 rounded text-xs text-slate-400 hover:text-slate-200 transition-all" title="Vista Tablet">
+                        <i class="fa-solid fa-tablet-screen-button"></i>
+                    </button>
+                    <button onclick="setViewport('mobile')" id="view-mobile" class="viewport-btn p-1 px-2 rounded text-xs text-slate-400 hover:text-slate-200 transition-all" title="Vista Móvil">
+                        <i class="fa-solid fa-mobile-screen-button"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Preview Container Canvas -->
+            <div class="flex-1 bg-slate-950 p-4 flex items-center justify-center overflow-auto relative">
+                <div id="preview-wrapper" class="w-full h-full bg-white rounded-lg shadow-2xl transition-all duration-300 overflow-hidden flex flex-col">
+                    <!-- Browser Bar Simulation -->
+                    <div class="bg-slate-100 border-b border-slate-200 px-3 py-1.5 flex items-center gap-2 shrink-0">
+                        <div class="flex items-center gap-1 text-slate-400 text-xs">
+                            <i class="fa-solid fa-arrow-left"></i>
+                            <i class="fa-solid fa-arrow-right"></i>
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </div>
+                        <div class="bg-white border border-slate-300 rounded px-2 py-0.5 text-[11px] text-slate-600 flex-1 flex items-center gap-1 font-mono">
+                            <i class="fa-solid fa-lock text-[9px] text-emerald-600"></i> https://mi-portafolio-estudiante.dev
+                        </div>
+                    </div>
+                    <!-- Live Iframe Renderer -->
+                    <iframe id="live-preview-iframe" class="w-full flex-1 border-none bg-white" title="Previsualización del Portafolio"></iframe>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- MODAL: DESAFÍO CAZADOR DE ERRORES -->
+    <div id="debugger-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 rounded-xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="bg-gradient-to-r from-amber-600/20 to-slate-900 p-4 border-b border-slate-700 flex justify-between items-center">
+                <div class="flex items-center gap-2.5">
+                    <div class="p-2 bg-amber-500/20 rounded-lg text-amber-400 border border-amber-500/30">
+                        <i class="fa-solid fa-bug text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-white text-base">Desafío Cazador de Errores (Auditoría en Dupla)</h3>
+                        <p class="text-xs text-amber-300/80">Identifica y corrige los 3 errores sintácticos intencionados</p>
+                    </div>
+                </div>
+                <button onclick="closeDebuggerModal()" class="text-slate-400 hover:text-white p-1 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="p-5 overflow-y-auto space-y-4 text-xs">
+                <div class="bg-slate-800/70 p-3 rounded-lg border border-slate-700 text-slate-300">
+                    <p class="font-semibold text-amber-400 mb-1"><i class="fa-solid fa-circle-info mr-1"></i> Instrucciones del Desafío:</p>
+                    <p class="text-slate-300">Se ha cargado un fragmento con 3 errores comunes en la maquetación web. Analiza el código con tu compañero/a, corrígelo en el editor y redacta tu justificación técnica abajo.</p>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-slate-300 font-semibold text-xs">Pistas de los 3 Errores Infiltrados:</label>
+                    <ul class="list-disc list-inside space-y-1 text-slate-400 pl-1">
+                        <li><strong class="text-slate-200">Error 1 (HTML):</strong> Una etiqueta estructurante importante quedó sin cerrar adecuadamente.</li>
+                        <li><strong class="text-slate-200">Error 2 (HTML):</strong> El atributo para cargar la imagen de perfil tiene un error tipográfico en su nombre.</li>
+                        <li><strong class="text-slate-200">Error 3 (CSS):</strong> Falta un delimitador punto y coma `;` en una propiedad crucial de CSS o regla Flexbox.</li>
+                    </ul>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label for="bug-justification" class="block text-slate-200 font-semibold">Bitácora de Depuración (Justificación Técnica):</label>
+                    <textarea id="bug-justification" rows="3" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-slate-200 focus:outline-none focus:border-amber-500 font-mono text-xs" placeholder="Explica brevemente qué errores encontraste y cómo los solucionaste junto a tu dupla..."></textarea>
+                </div>
+
+                <div id="debugger-feedback" class="hidden p-3 rounded-lg text-xs font-semibold"></div>
+            </div>
+
+            <div class="bg-slate-950 p-3.5 border-t border-slate-800 flex justify-between items-center">
+                <button onclick="closeDebuggerModal()" class="text-slate-400 hover:text-slate-200 px-3 py-1.5 rounded text-xs">Cancelar</button>
+                <button onclick="validateDebuggerChallenge()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-1.5 rounded-lg text-xs flex items-center gap-1.5 transition-all shadow-md shadow-amber-500/20">
+                    <i class="fa-solid fa-check-double"></i> Validar Corrección (+100 XP)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: COMODÍN DE AYUDA / PISTAS SINTÁCTICAS -->
+    <div id="hint-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 rounded-xl w-full max-w-lg overflow-hidden shadow-2xl">
+            <div class="bg-indigo-950/60 p-4 border-b border-slate-800 flex justify-between items-center">
+                <h3 class="font-bold text-indigo-300 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-lightbulb text-amber-400"></i> Comodín de Ayuda Sintáctica
+                </h3>
+                <button onclick="toggleHintModal()" class="text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="p-5 text-xs text-slate-300 space-y-3">
+                <div id="hint-content" class="space-y-2">
+                    <!-- Injected by JS based on level -->
+                </div>
+            </div>
+            <div class="bg-slate-950 p-3 border-t border-slate-800 text-right">
+                <button onclick="toggleHintModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-1.5 rounded text-xs">Entendido</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: INSIGNIAS Y LOGROS -->
+    <div id="badges-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 rounded-xl w-full max-w-md overflow-hidden shadow-2xl">
+            <div class="p-4 border-b border-slate-800 flex justify-between items-center">
+                <h3 class="font-bold text-white text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-award text-amber-400"></i> Galería de Insignias Desbloqueadas
+                </h3>
+                <button onclick="toggleBadgesModal()" class="text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="p-5 space-y-4">
+                <div class="flex items-center gap-3 bg-slate-950 p-3 rounded-lg border border-slate-800" id="badge-card-1">
+                    <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-lg text-slate-500 badge-icon">
+                        <i class="fa-solid fa-cubes"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-xs text-slate-200">Maquetador Estructural</h4>
+                        <p class="text-[11px] text-slate-400">Completar la estructura semántica de HTML del Portafolio (Reto 1 y 2).</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 bg-slate-950 p-3 rounded-lg border border-slate-800" id="badge-card-2">
+                    <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-lg text-slate-500 badge-icon">
+                        <i class="fa-solid fa-palette"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-xs text-slate-200">Diseñador CSS & Flexbox</h4>
+                        <p class="text-[11px] text-slate-400">Aplicar estilos visuales, colores y diagramación responsive (Reto 3).</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 bg-slate-950 p-3 rounded-lg border border-slate-800" id="badge-card-3">
+                    <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-lg text-slate-500 badge-icon">
+                        <i class="fa-solid fa-bug"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-xs text-slate-200">Cazador de Errores</h4>
+                        <p class="text-[11px] text-slate-400">Auditar, depurar y corregir los 3 errores sintácticos del desafío de dupla.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: FICHA DE EVIDENCIA / ENTREGABLE EN DUPLA -->
+    <div id="evidence-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 rounded-xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="bg-slate-950 p-4 border-b border-slate-800 flex justify-between items-center no-print">
+                <h3 class="font-bold text-white text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-file-contract text-indigo-400"></i> Ficha de Evidencia de Aprendizaje
+                </h3>
+                <button onclick="closeEvidenceModal()" class="text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div id="printable-modal" class="p-6 overflow-y-auto space-y-6 text-slate-200 bg-slate-900 text-xs">
+                <!-- Printable Header -->
+                <div class="border-b border-slate-700 pb-4 flex justify-between items-start">
+                    <div>
+                        <h2 class="text-lg font-bold text-indigo-400">Informe de Evaluación y Trabajo Colaborativo</h2>
+                        <p class="text-xs text-slate-400">Asignatura: Diseño Web para Diseño Gráfico</p>
+                    </div>
+                    <div class="text-right text-[11px] text-slate-400 font-mono">
+                        <p id="evidence-date">Fecha: 05/10/2026</p>
+                        <p>Estado: Finalizado</p>
+                    </div>
+                </div>
+
+                <!-- Input Integration Team Members -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-950 p-4 rounded-lg border border-slate-800">
+                    <div>
+                        <label class="block text-slate-400 font-medium text-[11px] mb-1">Integrante 1 (Maquetador/a):</label>
+                        <input type="text" id="student-1-name" class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500" placeholder="Nombre completo del Estudiante 1">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 font-medium text-[11px] mb-1">Integrante 2 (Verificador/a - Auditor/a):</label>
+                        <input type="text" id="student-2-name" class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500" placeholder="Nombre completo del Estudiante 2">
+                    </div>
+                </div>
+
+                <!-- Gamification Metrics Summary -->
+                <div class="grid grid-cols-3 gap-3 text-center">
+                    <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                        <span class="block text-[10px] text-slate-400 uppercase font-semibold">Puntaje Total</span>
+                        <span id="evidence-xp" class="text-base font-bold text-amber-400 font-mono">0 XP</span>
+                    </div>
+                    <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                        <span class="block text-[10px] text-slate-400 uppercase font-semibold">Nivel Alcanzado</span>
+                        <span id="evidence-level" class="text-base font-bold text-indigo-400">Nivel 1</span>
+                    </div>
+                    <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                        <span class="block text-[10px] text-slate-400 uppercase font-semibold">Insignias Logradas</span>
+                        <span id="evidence-badges-count" class="text-base font-bold text-emerald-400">0 / 3</span>
+                    </div>
+                </div>
+
+                <!-- Justification Record -->
+                <div class="space-y-2">
+                    <h4 class="font-bold text-slate-300 text-xs">Bitácora del Desafío Cazador de Errores:</h4>
+                    <div id="evidence-bug-text" class="bg-slate-950 p-3 rounded-lg border border-slate-800 text-slate-300 font-mono text-[11px] min-h-[60px] italic">
+                        No se ha completado el desafío de depuración aún.
+                    </div>
+                </div>
+
+                <!-- Code Snippet Summary -->
+                <div class="space-y-2">
+                    <h4 class="font-bold text-slate-300 text-xs">Muestra de Código HTML Generado:</h4>
+                    <pre id="evidence-code-preview" class="bg-slate-950 p-3 rounded-lg border border-slate-800 text-[10px] font-mono text-slate-300 overflow-x-auto max-h-32">
+                        <!-- Code injected by JS -->
+                    </pre>
+                </div>
+            </div>
+
+            <div class="bg-slate-950 p-3.5 border-t border-slate-800 flex justify-between items-center no-print">
+                <button onclick="closeEvidenceModal()" class="text-slate-400 hover:text-slate-200 px-3 py-1.5 rounded text-xs">Cerrar</button>
+                <button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-4 py-1.5 rounded-lg text-xs flex items-center gap-1.5 transition-all">
+                    <i class="fa-solid fa-print"></i> Imprimir / Guardar PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- ESTADO GLOBAL DE LA PLATAFORMA ---
+        const state = {
+            currentLevel: 1,
+            activeRole: 1, // 1: Maquetador, 2: Verificador
+            activeEditorTab: 'html', // 'html' | 'css'
+            xp: 0,
+            badges: {
+                structural: false,
+                designer: false,
+                debugger: false
+            },
+            debuggerCompleted: false,
+            bugJustificationText: '',
+            // Retención de código por nivel
+            code: {
+                1: {
+                    html: `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mi Portafolio Profesional</title>
+</head>
+<body>
+  <h1>Hola, soy Diseñador Gráfico</h1>
+  <p>Bienvenido a mi portafolio interactivo de proyectos.</p>
+  <a href="#contacto">Contacto Profesional</a>
+</body>
+</html>`,
+                    css: `/* Agrega tus estilos para el Reto 1 aquí */
+body {
+  font-family: sans-serif;
+  padding: 20px;
+}`
+                },
+                2: {
+                    html: `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mi Portafolio Profesional</title>
+</head>
+<body>
+  <header>
+    <h1>Ana Martínez | Diseñadora UX/UI</h1>
+  </header>
+  <main>
+    <section>
+      <h2>Sobre Mí</h2>
+      <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200" alt="Foto de Perfil de Ana">
+      <p>Especialista en identidad visual y diseño web moderno.</p>
+    </section>
+    <div>
+      <p>Proyectos destacados próximamente...</p>
+    </div>
+  </main>
+</body>
+</html>`,
+                    css: `/* Estilos para contenedores e imágenes */
+body {
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  background-color: #f8fafc;
+}
+img {
+  border-radius: 50%;
+  width: 120px;
+}`
+                },
+                3: {
+                    html: `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Portafolio Web Profesional</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="navbar">
+    <div class="logo">PORTAFOLIO</div>
+    <nav>
+      <a href="#">Proyectos</a>
+      <a href="#">Contacto</a>
+    </nav>
+  </header>
+  <main class="container">
+    <section class="card">
+      <h2>Diseño de Marca</h2>
+      <p>Creación de sistemas de identidad visual.</p>
+    </section>
+  </main>
+</body>
+</html>`,
+                    css: `/* Hoja de estilos vinculada con Flexbox */
+body {
+  background-color: #0f172a;
+  color: #f8fafc;
+  font-family: sans-serif;
+  margin: 0;
+}
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  background-color: #1e293b;
+}
+.container {
+  padding: 2rem;
+  margin: 0 auto;
+}
+.card {
+  background-color: #334155;
+  padding: 1.5rem;
+  border-radius: 8px;
+}`
+                }
+            }
+        };
+
+        // --- DEFINICIÓN DE CONFIGURACIÓN DE NIVELES Y OBJETIVOS ---
+        const levelsConfig = {
+            1: {
+                title: "Nivel 1: HTML Básico y Estructura Inicial",
+                desc: "Construye los cimientos del portafolio declarando el Doctype, encabezado principal y enlace social.",
+                objectives: [
+                    { id: "lvl1_obj1", text: "Incluir declaración <!DOCTYPE html> y etiqueta <h1>", check: (html, css) => /<!DOCTYPE\s+html>/i.test(html) && /<h1[^>]*>[\s\S]*?<\/h1>/i.test(html) },
+                    { id: "lvl1_obj2", text: "Agregar un párrafo explicativo con la etiqueta <p>", check: (html, css) => /<p[^>]*>[\s\S]*?<\/p>/i.test(html) },
+                    { id: "lvl1_obj3", text: "Añadir un enlace funcional con el atributo href (<a>)", check: (html, css) => /<a\s+[^>]*href=["'][^"']+["'][^>]*>[\s\S]*?<\/a>/i.test(html) }
+                ],
+                hint: `
+                    <p><strong>Pistas Sintácticas Reto 1:</strong></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Todo documento moderno inicia con <code>&lt;!DOCTYPE html&gt;</code>.</li>
+                        <li>Utiliza <code>&lt;h1&gt;Tu Nombre&lt;/h1&gt;</code> para el título principal.</li>
+                        <li>Los enlaces requieren el atributo href: <code>&lt;a href="https://..."&gt;Texto&lt;/a&gt;</code>.</li>
+                    </ul>
+                `
+            },
+            2: {
+                title: "Nivel 2: Contenedores e Imágenes Semánticas",
+                desc: "Organiza el contenido con etiquetas semánticas (<header>, <main>, <section>, <div>) e inserta tu fotografía.",
+                objectives: [
+                    { id: "lvl2_obj1", text: "Estructurar con <header>, <main> y <section>", check: (html, css) => /<header[^>]*>/i.test(html) && /<main[^>]*>/i.test(html) && /<section[^>]*>/i.test(html) },
+                    { id: "lvl2_obj2", text: "Agrupar elementos con al menos un contenedor <div>", check: (html, css) => /<div[^>]*>[\s\S]*?<\/div>/i.test(html) },
+                    { id: "lvl2_obj3", text: "Insertar una imagen <img> con atributo 'alt' descriptivo", check: (html, css) => /<img\s+[^>]*alt=["'][^"']+["'][^>]*>/i.test(html) }
+                ],
+                hint: `
+                    <p><strong>Pistas Sintácticas Reto 2:</strong></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Las etiquetas semánticas reemplazan el uso excesivo de divs vacíos.</li>
+                        <li>La etiqueta <code>&lt;img&gt;</code> es auto-cerrada y requiere el atributo <code>alt=""</code> para accesibilidad.</li>
+                    </ul>
+                `
+            },
+            3: {
+                title: "Nivel 3: Estilos CSS y Diagramación Flexbox",
+                desc: "Aplica colores, tipografía, márgenes y organiza la barra de navegación utilizando Flexbox.",
+                objectives: [
+                    { id: "lvl3_obj1", text: "Definir colores de fondo (background-color) y texto en CSS", check: (html, css) => /background-color\s*:/i.test(css) && /color\s*:/i.test(css) },
+                    { id: "lvl3_obj2", text: "Asignar tipografía (font-family) y padding / margin", check: (html, css) => /font-family\s*:/i.test(css) && /(padding|margin)\s*:/i.test(css) },
+                    { id: "lvl3_obj3", text: "Implementar un contenedor con 'display: flex'", check: (html, css) => /display\s*:\s*flex/i.test(css) }
+                ],
+                hint: `
+                    <p><strong>Pistas Sintácticas Reto 3:</strong></p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Sintaxis CSS básica: <code>selector { propiedad: valor; }</code>.</li>
+                        <li>Para activar Flexbox en la barra de navegación: <code>.navbar { display: flex; justify-between: space-between; }</code>.</li>
+                    </ul>
+                `
+            }
+        };
+
+        // --- INICIALIZACIÓN DE LA APLICACIÓN ---
+        window.onload = function() {
+            // Cargar fecha actual en el reporte
+            const today = new Date();
+            document.getElementById('evidence-date').innerText = `Fecha: ${today.toLocaleDateString('es-ES')}`;
+
+            // Cargar código inicial del Nivel 1
+            loadLevelData(1);
+            
+            // Listener de teclado para números de línea
+            const editorHtml = document.getElementById('code-editor-html');
+            const editorCss = document.getElementById('code-editor-css');
+            
+            editorHtml.addEventListener('scroll', syncScroll);
+            editorCss.addEventListener('scroll', syncScroll);
+
+            updateLineNumbers();
+            updatePreview();
+        };
+
+        // --- CAMBIO Y MANEJO DE NIVELES ---
+        function switchLevel(lvl) {
+            // Guardar código previo antes de cambiar
+            saveCurrentCodeState();
+
+            state.currentLevel = lvl;
+
+            // Actualizar pestañas de navegación UI
+            document.querySelectorAll('.level-tab').forEach((tab, index) => {
+                if (index + 1 === lvl) {
+                    tab.classList.add('active', 'bg-slate-900', 'text-indigo-400', 'border-t-2', 'border-indigo-500');
+                    tab.classList.remove('bg-slate-950', 'text-slate-400');
+                } else {
+                    tab.classList.remove('active', 'bg-slate-900', 'text-indigo-400', 'border-t-2', 'border-indigo-500');
+                    tab.classList.add('bg-slate-950', 'text-slate-400');
+                }
+            });
+
+            // Actualizar indicación de Nivel UI
+            document.getElementById('level-label').innerText = `Nivel ${lvl}`;
+            
+            loadLevelData(lvl);
+            updatePreview();
+        }
+
+        function loadLevelData(lvl) {
+            const config = levelsConfig[lvl];
+            document.getElementById('level-title').innerText = config.title;
+            document.getElementById('level-desc').innerText = config.desc;
+
+            // Cargar Código en Editores
+            document.getElementById('code-editor-html').value = state.code[lvl].html;
+            document.getElementById('code-editor-css').value = state.code[lvl].css;
+
+            // Cargar Pistas
+            document.getElementById('hint-content').innerHTML = config.hint;
+
+            // Actualizar Objetivos de la lista
+            renderChecklist();
+            updateLineNumbers();
+        }
+
+        function saveCurrentCodeState() {
+            const lvl = state.currentLevel;
+            state.code[lvl].html = document.getElementById('code-editor-html').value;
+            state.code[lvl].css = document.getElementById('code-editor-css').value;
+        }
+
+        // --- CHECKLIST & EVALUACIÓN EN TIEMPO REAL ---
+        function renderChecklist() {
+            const config = levelsConfig[state.currentLevel];
+            const currentHtml = document.getElementById('code-editor-html').value;
+            const currentCss = document.getElementById('code-editor-css').value;
+
+            const listContainer = document.getElementById('checklist-items');
+            listContainer.innerHTML = '';
+
+            let completedCount = 0;
+
+            config.objectives.forEach(obj => {
+                const isPassed = obj.check(currentHtml, currentCss);
+                if (isPassed) completedCount++;
+
+                const li = document.createElement('li');
+                li.className = `flex items-center justify-between p-1.5 rounded text-xs transition-all ${
+                    isPassed ? 'bg-emerald-950/40 border border-emerald-800/50 text-emerald-300' : 'bg-slate-900 text-slate-400 border border-slate-800'
+                }`;
+
+                li.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid ${isPassed ? 'fa-circle-check text-emerald-400' : 'fa-circle text-slate-600'} text-xs"></i>
+                        <span>${obj.text}</span>
+                    </div>
+                    <span class="text-[10px] font-mono px-1.5 py-0.5 rounded ${isPassed ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-800 text-slate-500'}">
+                        ${isPassed ? '+30 XP' : 'Pendiente'}
+                    </span>
+                `;
+                listContainer.appendChild(li);
+            });
+
+            document.getElementById('checklist-counter').innerText = `${completedCount}/${config.objectives.length} Completados`;
+
+            // Otorga XP dinámico por objetivos del nivel activo
+            calculateDynamicXP();
+        }
+
+        function calculateDynamicXP() {
+            let totalXp = 0;
+
+            // Recorrer todos los niveles
+            for (let lvl = 1; lvl <= 3; lvl++) {
+                const config = levelsConfig[lvl];
+                const html = state.code[lvl].html;
+                const css = state.code[lvl].css;
+
+                config.objectives.forEach(obj => {
+                    if (obj.check(html, css)) {
+                        totalXp += 30; // 30 XP por objetivo
+                    }
+                });
+            }
+
+            // Bono por cazador de errores
+            if (state.debuggerCompleted) {
+                totalXp += 100;
+            }
+
+            // Cap en 300 XP
+            state.xp = Math.min(300, totalXp);
+
+            // Actualizar UI XP
+            document.getElementById('xp-display').innerText = state.xp;
+            const progressPercent = Math.min(100, (state.xp / 300) * 100);
+            document.getElementById('xp-progress-bar').style.width = `${progressPercent}%`;
+
+            // Verificar insignias
+            checkBadgesUnlock();
+        }
+
+        function checkBadgesUnlock() {
+            // Insignia 1: Maquetador Estructural (Nivel 1 y 2 al 100%)
+            const lvl1Passed = levelsConfig[1].objectives.every(o => o.check(state.code[1].html, state.code[1].css));
+            const lvl2Passed = levelsConfig[2].objectives.every(o => o.check(state.code[2].html, state.code[2].css));
+            if (lvl1Passed && lvl2Passed) {
+                state.badges.structural = true;
+                unlockBadgeUI(1);
+            }
+
+            // Insignia 2: Diseñador CSS (Nivel 3 al 100%)
+            const lvl3Passed = levelsConfig[3].objectives.every(o => o.check(state.code[3].html, state.code[3].css));
+            if (lvl3Passed) {
+                state.badges.designer = true;
+                unlockBadgeUI(2);
+            }
+
+            // Insignia 3: Cazador de Errores
+            if (state.debuggerCompleted) {
+                state.badges.debugger = true;
+                unlockBadgeUI(3);
+            }
+        }
+
+        function unlockBadgeUI(num) {
+            const iconHeader = document.getElementById(`badge-icon-${num}`);
+            const cardModal = document.getElementById(`badge-card-${num}`);
+
+            if (iconHeader) {
+                iconHeader.className = "w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500 flex items-center justify-center text-[10px] text-emerald-400 glow-success";
+            }
+            if (cardModal) {
+                cardModal.classList.add('border-emerald-500/50', 'bg-emerald-950/20');
+                const badgeIcon = cardModal.querySelector('.badge-icon');
+                badgeIcon.className = "w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-500 flex items-center justify-center text-lg text-emerald-400";
+            }
+        }
+
+        // --- CONMUTADOR DE ROL DE LA DUPLA ---
+        function toggleRole() {
+            state.activeRole = state.activeRole === 1 ? 2 : 1;
+            const label = document.getElementById('role-label');
+            const icon = document.getElementById('role-icon');
+
+            if (state.activeRole === 1) {
+                label.innerText = "Rol 1: Maquetador";
+                icon.className = "fa-solid fa-laptop-code text-indigo-400";
+            } else {
+                label.innerText = "Rol 2: Verificador / Auditor";
+                icon.className = "fa-solid fa-user-check text-emerald-400";
+            }
+        }
+
+        // --- PESTAÑAS DE EDITOR HTML / CSS ---
+        function switchEditorTab(tab) {
+            state.activeEditorTab = tab;
+            const btnHtml = document.getElementById('editor-tab-html');
+            const btnCss = document.getElementById('editor-tab-css');
+            const editorHtml = document.getElementById('code-editor-html');
+            const editorCss = document.getElementById('code-editor-css');
+
+            if (tab === 'html') {
+                btnHtml.className = "px-3 py-1 rounded-md text-xs font-mono font-bold bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 flex items-center gap-1.5";
+                btnCss.className = "px-3 py-1 rounded-md text-xs font-mono font-medium text-slate-400 hover:text-slate-200 flex items-center gap-1.5";
+                editorHtml.classList.remove('hidden');
+                editorCss.classList.add('hidden');
+            } else {
+                btnCss.className = "px-3 py-1 rounded-md text-xs font-mono font-bold bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 flex items-center gap-1.5";
+                btnHtml.className = "px-3 py-1 rounded-md text-xs font-mono font-medium text-slate-400 hover:text-slate-200 flex items-center gap-1.5";
+                editorCss.classList.remove('hidden');
+                editorHtml.classList.add('hidden');
+            }
+            updateLineNumbers();
+        }
+
+        // --- MANEJO Y SINCRONIZACIÓN DEL EDITOR ---
+        function handleCodeChange() {
+            saveCurrentCodeState();
+            renderChecklist();
+            updateLineNumbers();
+            updatePreview();
+        }
+
+        function handleKeyDown(e) {
+            // Permitir sangría con la tecla TAB
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const textarea = e.target;
+                const start = textarea.selectionStart;
+                const end = textarea.selectionEnd;
+
+                textarea.value = textarea.value.substring(0, start) + "  " + textarea.value.substring(end);
+                textarea.selectionStart = textarea.selectionEnd = start + 2;
+                handleCodeChange();
+            }
+        }
+
+        function updateLineNumbers() {
+            const activeEditor = state.activeEditorTab === 'html' 
+                ? document.getElementById('code-editor-html') 
+                : document.getElementById('code-editor-css');
+            
+            const lines = activeEditor.value.split('\n').length;
+            const lineNumbersContainer = document.getElementById('line-numbers');
+            
+            let linesHtml = '';
+            for (let i = 1; i <= Math.max(lines, 1); i++) {
+                linesHtml += `${i}<br>`;
+            }
+            lineNumbersContainer.innerHTML = linesHtml;
+
+            // Actualizar indicador de cursor
+            document.getElementById('cursor-pos').innerText = `Líneas: ${lines}`;
+        }
+
+        function syncScroll() {
+            const activeEditor = state.activeEditorTab === 'html' 
+                ? document.getElementById('code-editor-html') 
+                : document.getElementById('code-editor-css');
+            const lineNumbers = document.getElementById('line-numbers');
+            lineNumbers.scrollTop = activeEditor.scrollTop;
+        }
+
+        function resetCurrentCode() {
+            const lvl = state.currentLevel;
+            state.code[lvl].html = levelsConfig[lvl] ? state.code[lvl].html : '';
+            loadLevelData(lvl);
+            updatePreview();
+        }
+
+        // --- ACTUALIZACIÓN DE LIVE PREVIEW EN IFRAME ---
+        function updatePreview() {
+            const iframe = document.getElementById('live-preview-iframe');
+            const htmlContent = document.getElementById('code-editor-html').value;
+            const cssContent = document.getElementById('code-editor-css').value;
+
+            const fullContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>${cssContent}</style>
+                </head>
+                <body>
+                    ${htmlContent}
+                </body>
+                </html>
+            `;
+
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            iframeDoc.open();
+            iframeDoc.write(fullContent);
+            iframeDoc.close();
+        }
+
+        // --- CONMUTADOR RESPONSIVE EN PREVIEW ---
+        function setViewport(mode) {
+            const wrapper = document.getElementById('preview-wrapper');
+            const btnDesktop = document.getElementById('view-desktop');
+            const btnTablet = document.getElementById('view-tablet');
+            const btnMobile = document.getElementById('view-mobile');
+
+            // Restablecer estilos de botones
+            [btnDesktop, btnTablet, btnMobile].forEach(btn => {
+                btn.className = "viewport-btn p-1 px-2 rounded text-xs text-slate-400 hover:text-slate-200 transition-all";
+            });
+
+            if (mode === 'desktop') {
+                wrapper.style.width = '100%';
+                wrapper.style.height = '100%';
+                btnDesktop.className = "viewport-btn active p-1 px-2 rounded text-xs text-indigo-400 bg-slate-800 transition-all";
+            } else if (mode === 'tablet') {
+                wrapper.style.width = '768px';
+                wrapper.style.height = '100%';
+                btnTablet.className = "viewport-btn active p-1 px-2 rounded text-xs text-indigo-400 bg-slate-800 transition-all";
+            } else if (mode === 'mobile') {
+                wrapper.style.width = '375px';
+                wrapper.style.height = '667px';
+                btnMobile.className = "viewport-btn active p-1 px-2 rounded text-xs text-indigo-400 bg-slate-800 transition-all";
+            }
+        }
+
+        // --- MODAL Y DESAFÍO: CAZADOR DE ERRORES ---
+        function startDebuggerChallenge() {
+            // Cargar código con errores en el editor
+            const buggedHtml = `<!DOCTYPE html>
+<html>
+<head>
+  <title>Portafolio con Errores</title>
+</head>
+<body>
+  <header>
+    <h1>Portafolio de Diseño</h1>
+  <!-- Error 1: La etiqueta header de arriba no se cerró bien o esta section está rota -->
+  <section>
+    <h2>Proyecto Ilustración</h2>
+    <!-- Error 2: El atributo de imagen dice 'srcc' en vez de 'src' -->
+    <img srcc="https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=200" alt="Obra de arte">
+  </section>
+</body>
+</html>`;
+
+            const buggedCss = `/* Error 3: Le falta un punto y coma al final de color */
+body {
+  background-color: #0f172a
+  color: #ffffff;
+}`;
+
+            document.getElementById('code-editor-html').value = buggedHtml;
+            document.getElementById('code-editor-css').value = buggedCss;
+            saveCurrentCodeState();
+
+            updatePreview();
+            updateLineNumbers();
+
+            // Abrir Modal de Instrucciones de Depuración
+            document.getElementById('debugger-modal').classList.remove('hidden');
+        }
+
+        function closeDebuggerModal() {
+            document.getElementById('debugger-modal').classList.add('hidden');
+        }
+
+        function validateDebuggerChallenge() {
+            const html = document.getElementById('code-editor-html').value;
+            const css = document.getElementById('code-editor-css').value;
+            const justification = document.getElementById('bug-justification').value.trim();
+            const feedback = document.getElementById('debugger-feedback');
+
+            feedback.classList.remove('hidden');
+
+            // Verificaciones sintácticas
+            const hasHeaderClosed = /<\/header>/i.test(html);
+            const hasValidSrc = /src=["']/i.test(html) && !/srcc=/i.test(html);
+            const hasCssSemicolon = /background-color\s*:\s*#[a-fA-F0-9]+\s*;/i.test(css);
+
+            if (!justification) {
+                feedback.className = "p-3 rounded-lg text-xs font-semibold bg-red-900/40 text-red-300 border border-red-700";
+                feedback.innerText = "Por favor, escribe la justificación técnica en la Bitácora de Depuración.";
+                return;
+            }
+
+            if (hasHeaderClosed && hasValidSrc && hasCssSemicolon) {
+                state.debuggerCompleted = true;
+                state.bugJustificationText = justification;
+
+                feedback.className = "p-3 rounded-lg text-xs font-semibold bg-emerald-900/40 text-emerald-300 border border-emerald-700";
+                feedback.innerText = "¡Excelente Trabajo! Los 3 errores fueron subsanados correctamente. Se han acreditado +100 XP y desbloqueado la insignia 'Cazador de Errores'.";
+
+                calculateDynamicXP();
+
+                setTimeout(() => {
+                    closeDebuggerModal();
+                }, 2200);
+            } else {
+                feedback.className = "p-3 rounded-lg text-xs font-semibold bg-amber-900/40 text-amber-300 border border-amber-700";
+                feedback.innerText = "Aún hay errores en el código. Verifica la etiqueta </header>, el atributo src de la imagen y el ';' en el CSS.";
+            }
+        }
+
+        // --- MODALES SECUNDARIOS (PISTAS, INSIGNIAS) ---
+        function toggleHintModal() {
+            const modal = document.getElementById('hint-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        function toggleBadgesModal() {
+            const modal = document.getElementById('badges-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        // --- FICHA DE EVIDENCIA Y EXPORTACIÓN ---
+        function openEvidenceModal() {
+            saveCurrentCodeState();
+
+            document.getElementById('evidence-xp').innerText = `${state.xp} / 300 XP`;
+            document.getElementById('evidence-level').innerText = `Nivel ${state.currentLevel}`;
+            
+            // Contar insignias obtenidas
+            const badgesEarned = Object.values(state.badges).filter(Boolean).length;
+            document.getElementById('evidence-badges-count').innerText = `${badgesEarned} / 3`;
+
+            // Justificación
+            document.getElementById('evidence-bug-text').innerText = state.bugJustificationText 
+                || "El grupo aún no ha completado la depuración de la Bitácora Cazador de Errores.";
+
+            // Código HTML generado
+            const cleanCode = document.getElementById('code-editor-html').value;
+            document.getElementById('evidence-code-preview').innerText = cleanCode.substring(0, 400) + '...';
+
+            document.getElementById('evidence-modal').classList.remove('hidden');
+        }
+
+        function closeEvidenceModal() {
+            document.getElementById('evidence-modal').classList.add('hidden');
+        }
+
+        // --- DESCARGAR HTML FINAL COMPILADO ---
+        function downloadCode() {
+            saveCurrentCodeState();
+            const htmlContent = document.getElementById('code-editor-html').value;
+            const cssContent = document.getElementById('code-editor-css').value;
+
+            const fullContent = `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portafolio Profesional - Estudiantes de Diseño Gráfico</title>
+  <style>
+${cssContent}
+  </style>
+</head>
+<body>
+${htmlContent}
+</body>
+</html>`;
+
+            const blob = new Blob([fullContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'portafolio-profesional-dupla.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
